@@ -6,6 +6,6 @@ services:
     ports: 
       - 8000:8000
     environment:
-      - BOT_TOKEN=${telegram_travel_bot_token}
+      - BOT_TOKEN=${telegram_travel_test_bot_token}
     # depends_on:
     #   - postgres
