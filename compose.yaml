@@ -1,0 +1,11 @@
+services:
+  python:
+    container_name: telegram_travel_bot-python
+    build: .
+    command: python ./run.py
+    ports: 
+      - 8000:8000
+    environment:
+      - BOT_TOKEN=${telegram_travel_bot_token}
+    # depends_on:
+    #   - postgres
