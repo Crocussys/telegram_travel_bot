@@ -2,6 +2,7 @@ FROM python:3.12.10-slim
 LABEL authors="Crocussys"
 
 ENV BOT_TOKEN=${BOT_TOKEN}
+ENV BOT_PROVIDER_TOKEN=${BOT_PROVIDER_TOKEN}
 ENV WORK_DIR=/usr/src/app
 
 WORKDIR ${WORK_DIR}
