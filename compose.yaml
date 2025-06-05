@@ -1,6 +1,6 @@
 services:
   python:
-    container_name: telegram_travel_bot-python
+    container_name: telegram_travel_test_bot-python
     build: .
     command: python ./run.py
     ports: 
