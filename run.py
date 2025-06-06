@@ -59,7 +59,7 @@ async def cafes_nn(message: Message) -> None:
 
 @dp.message(F.text == "Обновление гайда")
 async def another_guide(message: Message) -> None:
-    await message.answer("Обновление гайда")
+    await message.answer("Обновление будет доступно позже")
 
 @dp.message(F.photo)
 async def echo_handler(message: Message) -> None:
