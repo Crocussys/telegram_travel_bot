@@ -7,5 +7,6 @@ services:
       - 8000:8000
     environment:
       - BOT_TOKEN=${telegram_travel_bot_token}
+      - BOT_PROVIDER_TOKEN=${telegram_travel_bot_provider_token}
     # depends_on:
     #   - postgres

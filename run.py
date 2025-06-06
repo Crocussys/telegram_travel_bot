@@ -7,11 +7,12 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
-from aiogram.types import Message, KeyboardButton
+from aiogram.types import Message, KeyboardButton, LabeledPrice, PreCheckoutQuery
 
 from src import fileids, keyboard
 
 TOKEN = getenv("BOT_TOKEN")
+PROVIDER_TOKEN = getenv("BOT_PROVIDER_TOKEN")
 WORK_DIR = getenv("WORK_DIR")
 
 # All handlers should be attached to the Router (or Dispatcher)
@@ -34,7 +35,7 @@ async def command_start_handler(message: Message) -> None:
     # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
 
     kb.set([
-        [KeyboardButton(text="Кафе Нижнего"), KeyboardButton(text="Обновление гайда")],
+        [KeyboardButton(text="Кафе Нижнего")],
         # [KeyboardButton(text="Файл")]
     ])
 
@@ -48,13 +49,17 @@ async def cafes_nn(message: Message) -> None:
     
     await message.answer_photo(photo=files.photo("cafes_nn"))
     with open(f"{WORK_DIR}/texts/cafes_nn1.html", "rb") as text_file:
-        await message.answer(text_file.read())
-    with open(f"{WORK_DIR}/texts/cafes_nn2.html", "rb") as text_file:
         await message.answer(text_file.read(), reply_markup=kb.get())
+    await message.answer_invoice("Гайд Кафе Нижнего",
+                                 "Этот путеводитель нужен каждому, неважно едете вы в Нижний первый раз или уже живёте здесь",
+                                 message.date.strftime(f"{message.from_user.id}-%d.%m.%Y-%H:%M:%S"),
+                                 "RUB",
+                                 [LabeledPrice(label="Гайд Кафе Нижнего", amount=59900)],
+                                 PROVIDER_TOKEN)
 
 @dp.message(F.text == "Обновление гайда")
 async def another_guide(message: Message) -> None:
-    await message.answer("Обновление гайда")
+    await message.answer("Обновление будет доступно позже")
 
 @dp.message(F.photo)
 async def echo_handler(message: Message) -> None:
@@ -69,6 +74,16 @@ async def echo_handler(message: Message) -> None:
 #     # BQACAgIAAxkBAAO_aCHBuribNkgjFkW9yl2tAu90HysAAltqAAIZhxFJYVFmrk4im_A2BA
 #     await message.answer_document("BQACAgIAAxkBAAO_aCHBuribNkgjFkW9yl2tAu90HysAAltqAAIZhxFJYVFmrk4im_A2BA", protect_content=True)
 
+@dp.pre_checkout_query()
+async def process_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
+    await pre_checkout_query.answer(ok=True)
+
+@dp.message(F.successful_payment)
+async def process_successful_payment(message: Message):
+    with open(f"{WORK_DIR}/texts/successful_payment.html", "rb") as text_file:
+        await message.answer(text_file.read())
+    await message.answer_document(files.doc("main_file"), protect_content=True)
+
 @dp.message()
 async def echo_handler(message: Message) -> None:
     """
@@ -78,7 +93,6 @@ async def echo_handler(message: Message) -> None:
     """
 
     await message.answer("Пожалуйста пользуйтесь кнопками", reply_markup=kb.get())
-
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
