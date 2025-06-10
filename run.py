@@ -39,7 +39,7 @@ async def command_start_handler(message: Message) -> None:
         # [KeyboardButton(text="Файл")]
     ])
 
-    await message.answer_photo(photo=files.photo("menu"), caption="Выберете интересующий вас гайд", reply_markup=kb.get())
+    await message.answer_photo(photo=files.photo("menu"), caption="Выберите интересующий вас гайд", reply_markup=kb.get())
 
 @dp.message(F.text == "Кафе Нижнего")
 async def cafes_nn(message: Message) -> None:
