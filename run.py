@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import sys
+import json
 from os import getenv
 
 from aiogram import Bot, Dispatcher, F
@@ -9,17 +10,22 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message, KeyboardButton, LabeledPrice, PreCheckoutQuery
 
-from src import fileids, keyboard
+from src import fileids, keyboard, receipt
 
 TOKEN = getenv("BOT_TOKEN")
 PROVIDER_TOKEN = getenv("BOT_PROVIDER_TOKEN")
 WORK_DIR = getenv("WORK_DIR")
+CONF_DIR = f"{WORK_DIR}/src/conf"
 
 # All handlers should be attached to the Router (or Dispatcher)
 
 dp = Dispatcher()
-files = fileids.Files(f"{WORK_DIR}/src/conf/fileids.json")
+files = fileids.Files(f"{CONF_DIR}/fileids.json")
 kb = keyboard.Keyboard()
+rcept_f = receipt.ReceiptFactory(
+    f"{CONF_DIR}/products.json",
+    f"{CONF_DIR}/customer.json"
+)
 
 
 @dp.message(CommandStart())
@@ -46,16 +52,22 @@ async def cafes_nn(message: Message) -> None:
     kb.set([
         [KeyboardButton(text="Обновление гайда"), KeyboardButton(text="Выбрать другой гайд")]
     ])
+    rcept = rcept_f.get_receipt("cafes_nn")
     
     await message.answer_photo(photo=files.photo("cafes_nn"))
     with open(f"{WORK_DIR}/texts/cafes_nn1.html", "rb") as text_file:
         await message.answer(text_file.read(), reply_markup=kb.get())
-    await message.answer_invoice("Гайд Кафе Нижнего",
-                                 "Этот путеводитель нужен каждому, неважно едете вы в Нижний первый раз или уже живёте здесь",
+    await message.answer_invoice(rcept.get_name(),
+                                 rcept.get_description(),
                                  message.date.strftime(f"{message.from_user.id}-%d.%m.%Y-%H:%M:%S"),
-                                 "RUB",
-                                 [LabeledPrice(label="Гайд Кафе Нижнего", amount=59900)],
-                                 PROVIDER_TOKEN)
+                                 rcept.get_currency(),
+                                 [LabeledPrice(label=rcept.get_name(), amount=int(float(rcept.get_amount()) * 100))],
+                                 PROVIDER_TOKEN,
+                                 need_phone_number=True,
+                                 need_email=True,
+                                 send_phone_number_to_provider=True,
+                                 send_email_to_provider=True,
+                                 provider_data=rcept.get_provider_data())
 
 @dp.message(F.text == "Обновление гайда")
 async def another_guide(message: Message) -> None:
