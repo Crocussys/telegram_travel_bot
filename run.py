@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import sys
-import json
 from os import getenv
 
 from aiogram import Bot, Dispatcher, F
