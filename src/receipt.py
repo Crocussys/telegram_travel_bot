@@ -26,7 +26,7 @@ class ReceiptFactory:
                     "items": [self.conf["item"]]
                 }
             }
-            return json.dump(provider_data)
+            return json.dumps(provider_data)
 
     def __init__(self, conf_file_path, customer_file_path):
         with open(conf_file_path, "r") as conf_file:
