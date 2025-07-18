@@ -1,0 +1,17 @@
+{
+    "cafes_nn": {
+        "description": "Этот путеводитель нужен каждому, неважно едете вы в Нижний первый раз или уже живёте здесь",
+        "item": {
+            "description": "Гайд Кафе Нижнего",
+            "amount": {
+                "value": "599.00",
+                "currency": "RUB"
+                },
+            "vat_code": 1,
+            "quantity": 1,
+            "measure": "another",
+            "payment_subject": "another",
+            "payment_mode": "full_payment"
+        }
+    }
+}
