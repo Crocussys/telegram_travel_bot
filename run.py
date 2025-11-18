@@ -70,7 +70,8 @@ async def cafes_nn(message: Message) -> None:
 
 @dp.message(F.text == "Обновление гайда")
 async def another_guide(message: Message) -> None:
-    await message.answer("Обновление будет доступно позже")
+    with open(f"{WORK_DIR}/texts/update_guide.html", "rb") as text_file:
+        await message.answer(text_file.read(), reply_markup=kb.get())
 
 @dp.message(F.photo)
 async def echo_handler(message: Message) -> None:
