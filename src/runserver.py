@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import sys
-from os import getenv
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
@@ -9,21 +8,18 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message, KeyboardButton, LabeledPrice, PreCheckoutQuery
 
-from src import fileids, keyboard, receipt
-
-TOKEN = getenv("BOT_TOKEN")
-PROVIDER_TOKEN = getenv("BOT_PROVIDER_TOKEN")
-WORK_DIR = getenv("WORK_DIR")
-CONF_DIR = f"{WORK_DIR}/src/conf"
+from bot.environments import Environments as env
+from bot import fileids, keyboard, receipt
 
 # All handlers should be attached to the Router (or Dispatcher)
 
 dp = Dispatcher()
-files = fileids.Files(f"{CONF_DIR}/fileids.json")
+envs = env()
+files = fileids.Files(f"{envs["conf_dir"]}/fileids.json")
 kb = keyboard.Keyboard()
 rcept_f = receipt.ReceiptFactory(
-    f"{CONF_DIR}/products.json",
-    f"{CONF_DIR}/customer.json"
+    f"{envs["conf_dir"]}/products.json",
+    envs["customer_file"]
 )
 
 
@@ -41,7 +37,6 @@ async def command_start_handler(message: Message) -> None:
 
     kb.set([
         [KeyboardButton(text="Кафе Нижнего")],
-        # [KeyboardButton(text="Файл")]
     ])
 
     await message.answer_photo(photo=files.photo("menu"), caption="Выберите интересующий вас гайд", reply_markup=kb.get())
@@ -54,23 +49,25 @@ async def cafes_nn(message: Message) -> None:
     rcept = rcept_f.get_receipt("cafes_nn")
     
     await message.answer_photo(photo=files.photo("cafes_nn"))
-    with open(f"{WORK_DIR}/texts/cafes_nn1.html", "rb") as text_file:
+    with open(f"{envs["work_dir"]}/texts/cafes_nn1.html", "rb") as text_file:
         await message.answer(text_file.read(), reply_markup=kb.get())
-    await message.answer_invoice(rcept.get_name(),
-                                 rcept.get_description(),
-                                 message.date.strftime(f"{message.from_user.id}-%d.%m.%Y-%H:%M:%S"),
-                                 rcept.get_currency(),
-                                 [LabeledPrice(label=rcept.get_name(), amount=int(float(rcept.get_amount()) * 100))],
-                                 PROVIDER_TOKEN,
-                                 need_phone_number=True,
-                                 need_email=True,
-                                 send_phone_number_to_provider=True,
-                                 send_email_to_provider=True,
-                                 provider_data=rcept.get_provider_data())
+    await message.answer_invoice(
+        rcept.get_name(),
+        rcept.get_description(),
+        message.date.strftime(f"{message.from_user.id}-%d.%m.%Y-%H:%M:%S"),
+        rcept.get_currency(),
+        [LabeledPrice(label=rcept.get_name(), amount=int(float(rcept.get_amount()) * 100))],
+        envs["bot_provider_token"],
+        need_phone_number=True,
+        need_email=True,
+        send_phone_number_to_provider=True,
+        send_email_to_provider=True,
+        provider_data=rcept.get_provider_data()
+    )
 
 @dp.message(F.text == "Обновление гайда")
 async def another_guide(message: Message) -> None:
-    with open(f"{WORK_DIR}/texts/update_guide.html", "rb") as text_file:
+    with open(f"{envs["work_dir"]}/texts/update_guide.html", "rb") as text_file:
         await message.answer(text_file.read(), reply_markup=kb.get())
 
 @dp.message(F.photo)
@@ -81,18 +78,13 @@ async def echo_handler(message: Message) -> None:
 async def echo_handler(message: Message) -> None:
     print(f"File_id - {message.document.file_id}")
 
-# @dp.message(F.text == "Файл")
-# async def file(message: Message) -> None:
-#     # BQACAgIAAxkBAAO_aCHBuribNkgjFkW9yl2tAu90HysAAltqAAIZhxFJYVFmrk4im_A2BA
-#     await message.answer_document("BQACAgIAAxkBAAO_aCHBuribNkgjFkW9yl2tAu90HysAAltqAAIZhxFJYVFmrk4im_A2BA", protect_content=True)
-
 @dp.pre_checkout_query()
 async def process_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
     await pre_checkout_query.answer(ok=True)
 
 @dp.message(F.successful_payment)
 async def process_successful_payment(message: Message):
-    with open(f"{WORK_DIR}/texts/successful_payment.html", "rb") as text_file:
+    with open(f"{envs["work_dir"]}/texts/successful_payment.html", "rb") as text_file:
         await message.answer(text_file.read())
     await message.answer_document(files.doc("main_file"), protect_content=True)
 
@@ -108,7 +100,7 @@ async def echo_handler(message: Message) -> None:
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
-    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    bot = Bot(token=envs["bot_token"], default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
     # And the run events dispatching
     await dp.start_polling(bot)

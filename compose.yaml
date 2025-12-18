@@ -1,12 +1,41 @@
 services:
-  python:
-    container_name: telegram_travel_bot-python
+  python-bot:
+    container_name: telegram_travel_bot_test-python
     build: .
-    command: python ./run.py
+    command: python ./runserver.py
     ports: 
       - 8000:8000
+    secrets:
+      - bot_tokens
+      - postgres_connect
+      - postgres_net
+      - customer_info
     environment:
-      - BOT_TOKEN=${telegram_travel_bot_token}
-      - BOT_PROVIDER_TOKEN=${telegram_travel_bot_provider_token}
-    # depends_on:
-    #   - postgres
+      SECTRETS_DIR: /run/secrets
+      SECTRETS_ENV_FILES: ${SECTRETS_DIR}/bot_tokens;${SECTRETS_DIR}/postgres_connect;${SECTRETS_DIR}/postgres_net
+      CUSTOMER_FILE: ${SECTRETS_DIR}/customer_info
+    depends_on:
+      - postgres
+    networks:
+      - pg-net
+
+  adminer:
+    container_name: telegram_travel_bot_test-adminer
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+networks:
+  pg-net:
+    external: true
+
+secrets:
+  bot_tokens:
+    file: ./secrets/bot_tokens.txt
+  postgres_connect:
+    file: ./secrets/postgres_connect.txt
+  postgres_net:
+    file: ./secrets/postgres_net.txt
+  customer_info:
+    file: ./secrets/customer.json
