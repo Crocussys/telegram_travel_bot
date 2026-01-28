@@ -1,11 +1,13 @@
 from os import getenv
 from pathlib import Path
+import json
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-import json
+from db import Core as dbCore
+from db import ModuleWithModelsBasic, CustomFunctionsBase
 
 
 class Environments(dict):
@@ -73,25 +75,44 @@ class ReceiptFactory:
 
     def get_receipt(self, id):
         conf = self.conf.get(id)
-        if conf is None:
-            raise AttributeError
+        assert conf is not None
         return self.Receipt(conf, self.customer)
 
 
-class Core:
+class Data(CustomFunctionsBase):
+    pass
+
+
+class Core(ModuleWithModelsBasic):
     dp = Dispatcher()
     
     def __init__(self):
+        super().__init__()
+
         self.env = Environments()
-        self.files = Files(f"{self.env["conf_dir"]}/fileids.json")
+
+        self.module_name = "bot"
+        self.models_path = f"{self.env["work_dir"]}\\bot\\models.py"
+
+        self.files = Files(f"{self.env["conf_dir"]}\\fileids.json")
         self.rcept_f = ReceiptFactory(
-            f"{self.env["conf_dir"]}/products.json",
+            f"{self.env["conf_dir"]}\\products.json",
             self.env["customer_file"]
+        )
+        self.db = dbCore(
+            self.env["postgres_user"],
+            self.env["postgres_password"],
+            self.env["postgres_host"],
+            self.env["postgres_port"],
+            "telegram_travel_bot",
+            [self]
         )
 
     async def start_pooling(self):
-        bot = Bot(token=self.env["bot_token"], default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-        await self.dp.start_polling(bot)
+        await self.dp.start_polling(Bot(
+            token=self.env["bot_token"],
+            default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+        ))
 
     @dp.message()
     async def message(self, message: Message) -> None:
