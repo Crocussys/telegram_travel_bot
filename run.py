@@ -136,6 +136,8 @@ async def process_successful_payment(message: Message):
         await message.answer_document(files.doc("cafes_nn"), protect_content=True)
     elif product_id == 1:
         await message.answer_document(files.doc("hotels_spb"), protect_content=True)
+    else:
+        await message.answer("Что-то пошло не так...", reply_markup=kb.get())
 
 @dp.message()
 async def echo_handler(message: Message) -> None:
