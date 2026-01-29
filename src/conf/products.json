@@ -13,5 +13,20 @@
             "payment_subject": "another",
             "payment_mode": "full_payment"
         }
+    },
+    "hotels_spb": {
+        "description": "Здесь вы найдете самые стильные апартаменты и отели Северной столицы, расположенные в исторической части города, от бюджетных вариантов до бизнес-класса.",
+        "item": {
+            "description": "Гайд с эстетичными отелями Санкт-Петербурга",
+            "amount": {
+                "value": "990.00",
+                "currency": "RUB"
+                },
+            "vat_code": 1,
+            "quantity": 1,
+            "measure": "another",
+            "payment_subject": "another",
+            "payment_mode": "full_payment"
+        }
     }
 }

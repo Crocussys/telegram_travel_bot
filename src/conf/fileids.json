@@ -1,9 +1,11 @@
 {
     "photos": {
         "menu": "AgACAgIAAxkBAAMUaAYu_p_c5teyfdAQpdOQ-BPACmcAAirvMRtPQDFISX7aSKnEz_cBAAMCAANzAAM2BA",
-        "cafes_nn": "AgACAgIAAxkBAAMZaAYwL7Mfhhq18TnEzvF1c1emoXcAAj_vMRtPQDFIQ6TB-itBX8ABAAMCAANzAAM2BA"
+        "cafes_nn": "AgACAgIAAxkBAAMZaAYwL7Mfhhq18TnEzvF1c1emoXcAAj_vMRtPQDFIQ6TB-itBX8ABAAMCAANzAAM2BA",
+        "hotels_spb": "AgACAgIAAxkBAAIEfGl7AqKKDnOkfMNc_ZUvWz0vTNA6AAJUEWsbFHfAS_D5MqqhArHkAQADAgADcwADOAQ"
     },
     "documents": {
-        "main_file": "BQACAgIAAxkBAAIEJWkcsz6acJPV4_v9kacgsqu7vNvbAAIxhwAC_jzgSMzLNECoaV5qNgQ"
+        "cafes_nn": "BQACAgIAAxkBAAIEJWkcsz6acJPV4_v9kacgsqu7vNvbAAIxhwAC_jzgSMzLNECoaV5qNgQ",
+        "hotels_spb": "BQACAgIAAxkBAAIEfWl7As2-exet186GV90qrYpzgW0EAAKxkQACGALQSxp2FTLFF7_iOAQ"
     }
 }

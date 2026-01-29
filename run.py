@@ -16,8 +16,6 @@ PROVIDER_TOKEN = getenv("BOT_PROVIDER_TOKEN")
 WORK_DIR = getenv("WORK_DIR")
 CONF_DIR = f"{WORK_DIR}/src/conf"
 
-# All handlers should be attached to the Router (or Dispatcher)
-
 dp = Dispatcher()
 files = fileids.Files(f"{CONF_DIR}/fileids.json")
 kb = keyboard.Keyboard()
@@ -30,21 +28,26 @@ rcept_f = receipt.ReceiptFactory(
 @dp.message(CommandStart())
 @dp.message(F.text == "Выбрать другой гайд")
 async def command_start_handler(message: Message) -> None:
-    """
-    This handler receives messages with `/start` command
-    """
-    # Most event objects have aliases for API methods that can be called in events' context
-    # For example if you want to answer to incoming message you can use `message.answer(...)` alias
-    # and the target chat will be passed to :ref:`aiogram.methods.send_message.SendMessage`
-    # method automatically or call API method directly via
-    # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
-
     kb.set([
-        [KeyboardButton(text="Кафе Нижнего")],
-        # [KeyboardButton(text="Файл")]
+        [
+            KeyboardButton(text="Нижний Новгород"),
+            KeyboardButton(text="Санкт-Петербург")
+        ],
     ])
 
-    await message.answer_photo(photo=files.photo("menu"), caption="Выберите интересующий вас гайд", reply_markup=kb.get())
+    await message.answer_photo(photo=files.photo("menu"), caption="По какому городу нужен гайд?", reply_markup=kb.get())
+
+@dp.message(F.text == "Нижний Новгород")
+async def nn(message: Message) -> None:
+    kb.set([
+        [
+            KeyboardButton(text="Кафе Нижнего"),
+        ],
+        [
+            KeyboardButton(text="Выбрать другой гайд"),
+        ]
+    ])
+    await message.answer("Выберите интересующий вас гайд", reply_markup=kb.get())
 
 @dp.message(F.text == "Кафе Нижнего")
 async def cafes_nn(message: Message) -> None:
@@ -56,17 +59,55 @@ async def cafes_nn(message: Message) -> None:
     await message.answer_photo(photo=files.photo("cafes_nn"))
     with open(f"{WORK_DIR}/texts/cafes_nn1.html", "rb") as text_file:
         await message.answer(text_file.read(), reply_markup=kb.get())
-    await message.answer_invoice(rcept.get_name(),
-                                 rcept.get_description(),
-                                 message.date.strftime(f"{message.from_user.id}-%d.%m.%Y-%H:%M:%S"),
-                                 rcept.get_currency(),
-                                 [LabeledPrice(label=rcept.get_name(), amount=int(float(rcept.get_amount()) * 100))],
-                                 PROVIDER_TOKEN,
-                                 need_phone_number=True,
-                                 need_email=True,
-                                 send_phone_number_to_provider=True,
-                                 send_email_to_provider=True,
-                                 provider_data=rcept.get_provider_data())
+    await message.answer_invoice(
+        rcept.get_name(),
+        rcept.get_description(),
+        message.date.strftime(f"0-{message.from_user.id}-%d.%m.%Y-%H:%M:%S"),
+        rcept.get_currency(),
+        [LabeledPrice(label=rcept.get_name(), amount=int(float(rcept.get_amount()) * 100))],
+        PROVIDER_TOKEN,
+        need_phone_number=True,
+        need_email=True,
+        send_phone_number_to_provider=True,
+        send_email_to_provider=True,
+        provider_data=rcept.get_provider_data()
+    )
+
+@dp.message(F.text == "Санкт-Петербург")
+async def spb(message: Message) -> None:
+    kb.set([
+        [
+            KeyboardButton(text="Апартаменты и отели"),
+        ],
+        [
+            KeyboardButton(text="Выбрать другой гайд"),
+        ]
+    ])
+    await message.answer("Выберите интересующий вас гайд", reply_markup=kb.get())
+
+@dp.message(F.text == "Апартаменты и отели")
+async def hotels_spb(message: Message) -> None:
+    kb.set([
+        [KeyboardButton(text="Обновление гайда"), KeyboardButton(text="Выбрать другой гайд")]
+    ])
+    rcept = rcept_f.get_receipt("hotels_spb")
+    
+    await message.answer_photo(photo=files.photo("hotels_spb"))
+    with open(f"{WORK_DIR}/texts/hotels_spb1.html", "rb") as text_file:
+        await message.answer(text_file.read(), reply_markup=kb.get())
+    await message.answer_invoice(
+        rcept.get_name(),
+        rcept.get_description(),
+        message.date.strftime(f"1-{message.from_user.id}-%d.%m.%Y-%H:%M:%S"),
+        rcept.get_currency(),
+        [LabeledPrice(label=rcept.get_name(), amount=int(float(rcept.get_amount()) * 100))],
+        PROVIDER_TOKEN,
+        need_phone_number=True,
+        need_email=True,
+        send_phone_number_to_provider=True,
+        send_email_to_provider=True,
+        provider_data=rcept.get_provider_data()
+    )
 
 @dp.message(F.text == "Обновление гайда")
 async def another_guide(message: Message) -> None:
@@ -81,11 +122,6 @@ async def echo_handler(message: Message) -> None:
 async def echo_handler(message: Message) -> None:
     print(f"File_id - {message.document.file_id}")
 
-# @dp.message(F.text == "Файл")
-# async def file(message: Message) -> None:
-#     # BQACAgIAAxkBAAO_aCHBuribNkgjFkW9yl2tAu90HysAAltqAAIZhxFJYVFmrk4im_A2BA
-#     await message.answer_document("BQACAgIAAxkBAAO_aCHBuribNkgjFkW9yl2tAu90HysAAltqAAIZhxFJYVFmrk4im_A2BA", protect_content=True)
-
 @dp.pre_checkout_query()
 async def process_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
     await pre_checkout_query.answer(ok=True)
@@ -94,23 +130,21 @@ async def process_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
 async def process_successful_payment(message: Message):
     with open(f"{WORK_DIR}/texts/successful_payment.html", "rb") as text_file:
         await message.answer(text_file.read())
-    await message.answer_document(files.doc("main_file"), protect_content=True)
+    invoice = message.successful_payment.invoice_payload.split("-")
+    product_id = int(invoice[0])
+    if product_id == 0:
+        await message.answer_document(files.doc("cafes_nn"), protect_content=True)
+    elif product_id == 1:
+        await message.answer_document(files.doc("hotels_spb"), protect_content=True)
+    else:
+        await message.answer("Что-то пошло не так...", reply_markup=kb.get())
 
 @dp.message()
 async def echo_handler(message: Message) -> None:
-    """
-    Handler will forward receive a message back to the sender
-
-    By default, message handler will handle all message types (like a text, photo, sticker etc.)
-    """
-
     await message.answer("Пожалуйста пользуйтесь кнопками", reply_markup=kb.get())
 
 async def main() -> None:
-    # Initialize Bot instance with default bot properties which will be passed to all API calls
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-
-    # And the run events dispatching
     await dp.start_polling(bot)
 
 
