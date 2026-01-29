@@ -22,7 +22,11 @@ class Environments(dict):
 
         secrets_files = getenv("SECTRETS_ENV_FILES").split(";")
         for secret_file_path in secrets_files:
-            self.update({data[:data.find("=")]: data[data.find("=") + 1:] for data in Path(secret_file_path).read_text().split("\n")})
+            self.update({
+                data[:data.find("=")]: data[data.find("=") + 1:]
+                for data
+                in Path(secret_file_path).read_text().split("\n")
+            })
 
 
 class Files:

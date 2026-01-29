@@ -69,7 +69,8 @@ class Core:
         self.need_migrate = None
 
     def __del__(self):
-        self.conn.close()
+        if self.conn is not None:
+            self.conn.close()
 
     def change_protected(self, func):
         def wrapper(*args, **kwargs):
@@ -100,3 +101,5 @@ class Core:
         sql = self.mm.create_table_sql(model_name)
         with self.conn.cursor() as cur:
             cur.execute(sql)
+
+    def select(self):
