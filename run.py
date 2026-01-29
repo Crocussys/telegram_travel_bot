@@ -35,7 +35,7 @@ async def command_start_handler(message: Message) -> None:
         ],
     ])
 
-    await message.answer_photo(photo=files.photo("menu"), caption="Выберите интересующий вас гайд", reply_markup=kb.get())
+    await message.answer_photo(photo=files.photo("menu"), caption="По какому городу нужен гайд?", reply_markup=kb.get())
 
 @dp.message(F.text == "Нижний Новгород")
 async def nn(message: Message) -> None:
